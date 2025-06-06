@@ -27,7 +27,28 @@
               "raw": "{{base_url}}/api/auth/register",
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "register"]
-            }
+            },
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"Status code is 201\", function () {",
+                    "    pm.expect(pm.response.code).to.equal(201);",
+                    "});",
+                    "",
+                    "pm.test(\"Response has token with role\", function () {",
+                    "    const response = pm.response.json();",
+                    "    pm.expect(response).to.have.property('token');",
+                    "    const token = response.token;",
+                    "    const decoded = JSON.parse(atob(token.split('.')[1]));",
+                    "    pm.expect(decoded).to.have.property('role', 'jobseeker');",
+                    "});"
+                  ]
+                }
+              }
+            ]
           }
         },
         {
@@ -48,7 +69,28 @@
               "raw": "{{base_url}}/api/auth/register",
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "register"]
-            }
+            },
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"Status code is 201\", function () {",
+                    "    pm.expect(pm.response.code).to.equal(201);",
+                    "});",
+                    "",
+                    "pm.test(\"Response has token with role\", function () {",
+                    "    const response = pm.response.json();",
+                    "    pm.expect(response).to.have.property('token');",
+                    "    const token = response.token;",
+                    "    const decoded = JSON.parse(atob(token.split('.')[1]));",
+                    "    pm.expect(decoded).to.have.property('role', 'employer');",
+                    "});"
+                  ]
+                }
+              }
+            ]
           }
         },
         {
@@ -69,7 +111,36 @@
               "raw": "{{base_url}}/api/auth/login",
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "login"]
-            }
+            },
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "    pm.expect(pm.response.code).to.equal(200);",
+                    "});",
+                    "",
+                    "pm.test(\"Response has token with role\", function () {",
+                    "    const response = pm.response.json();",
+                    "    pm.expect(response).to.have.property('token');",
+                    "    const token = response.token;",
+                    "    const decoded = JSON.parse(atob(token.split('.')[1]));",
+                    "    pm.expect(decoded).to.have.property('role');",
+                    "    pm.expect(['jobseeker', 'employer']).to.include(decoded.role);",
+                    "});",
+                    "",
+                    "// Store the token for future requests",
+                    "if (pm.response.code === 200) {",
+                    "    const response = pm.response.json();",
+                    "    pm.environment.set('auth_token', response.token);",
+                    "    pm.environment.set('user_role', response.user.role);",
+                    "}"
+                  ]
+                }
+              }
+            ]
           }
         }
       ]
@@ -251,6 +322,11 @@
     {
       "key": "user_password",
       "value": "securepass123",
+      "type": "string"
+    },
+    {
+      "key": "user_role",
+      "value": "jobseeker",
       "type": "string"
     },
     {
