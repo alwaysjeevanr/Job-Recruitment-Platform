@@ -3,7 +3,8 @@ const router = express.Router();
 const JobController = require('../controllers/JobController');
 const { protect, authorize } = require('../middleware/auth');
 
-// Public route
+// Public routes
+router.get('/jobs/recent', JobController.getRecentJobs);
 router.get('/jobs', JobController.listJobs);
 
 // Protected routes - only employers can create jobs

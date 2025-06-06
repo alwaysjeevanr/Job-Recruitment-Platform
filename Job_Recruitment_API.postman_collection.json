@@ -149,37 +149,57 @@
       "name": "Jobs",
       "item": [
         {
-          "name": "Create Job",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"title\": \"Senior Full Stack Developer\",\n    \"description\": \"We are looking for an experienced Full Stack Developer to join our team. The ideal candidate should have strong experience with modern web technologies and a passion for building scalable applications.\",\n    \"location\": \"Mumbai, India\",\n    \"requirements\": \"5+ years of experience in web development\\nStrong knowledge of JavaScript, Node.js, and React\\nExperience with MongoDB and RESTful APIs\\nGood understanding of software design patterns\\nExcellent problem-solving skills\",\n    \"skills\": [\"JavaScript\", \"Node.js\", \"React\", \"MongoDB\", \"REST API\", \"Git\"],\n    \"employerId\": \"{{employer_id}}\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/jobs",
-              "host": ["{{base_url}}"],
-              "path": ["api", "jobs"]
-            }
-          }
-        },
-        {
-          "name": "List Jobs",
+          "name": "Get Recent Jobs",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/api/jobs?page=1&limit=10&title=developer&location=mumbai&skills=javascript",
+              "raw": "{{base_url}}/api/jobs/recent",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", "recent"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has jobs array\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('jobs');",
+                  "    pm.expect(response.jobs).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test(\"Jobs have required fields\", function () {",
+                  "    const response = pm.response.json();",
+                  "    if (response.jobs.length > 0) {",
+                  "        const job = response.jobs[0];",
+                  "        pm.expect(job).to.have.property('title');",
+                  "        pm.expect(job).to.have.property('description');",
+                  "        pm.expect(job).to.have.property('location');",
+                  "        pm.expect(job).to.have.property('employerId');",
+                  "        pm.expect(job).to.have.property('skills');",
+                  "        pm.expect(job).to.have.property('type');",
+                  "        pm.expect(job).to.have.property('status');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Jobs with Filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jobs?page=1&limit=10&title=developer&location=mumbai&skills=javascript&type=Full-time",
               "host": ["{{base_url}}"],
               "path": ["api", "jobs"],
               "query": [
@@ -202,10 +222,101 @@
                 {
                   "key": "skills",
                   "value": "javascript"
+                },
+                {
+                  "key": "type",
+                  "value": "Full-time"
                 }
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has jobs and pagination\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('jobs');",
+                  "    pm.expect(response).to.have.property('pagination');",
+                  "});",
+                  "",
+                  "pm.test(\"Pagination has correct structure\", function () {",
+                  "    const response = pm.response.json();",
+                  "    const pagination = response.pagination;",
+                  "    pm.expect(pagination).to.have.property('total');",
+                  "    pm.expect(pagination).to.have.property('page');",
+                  "    pm.expect(pagination).to.have.property('limit');",
+                  "    pm.expect(pagination).to.have.property('totalPages');",
+                  "    pm.expect(pagination).to.have.property('hasNextPage');",
+                  "    pm.expect(pagination).to.have.property('hasPrevPage');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Job",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Senior Full Stack Developer\",\n    \"description\": \"We are looking for an experienced Full Stack Developer to join our team. The ideal candidate should have strong experience with modern web technologies and a passion for building scalable applications.\",\n    \"location\": \"Mumbai, India\",\n    \"requirements\": \"5+ years of experience in web development\\nStrong knowledge of JavaScript, Node.js, and React\\nExperience with MongoDB and RESTful APIs\\nGood understanding of software design patterns\\nExcellent problem-solving skills\",\n    \"skills\": [\"JavaScript\", \"Node.js\", \"React\", \"MongoDB\", \"REST API\", \"Git\"],\n    \"employerId\": \"{{employer_id}}\",\n    \"salary\": \"$80,000 - $100,000\",\n    \"type\": \"Full-time\",\n    \"experience\": \"5+ years\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jobs",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.expect(pm.response.code).to.equal(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has job details\", function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('message');",
+                  "    pm.expect(response).to.have.property('job');",
+                  "    const job = response.job;",
+                  "    pm.expect(job).to.have.property('title');",
+                  "    pm.expect(job).to.have.property('description');",
+                  "    pm.expect(job).to.have.property('location');",
+                  "    pm.expect(job).to.have.property('skills');",
+                  "    pm.expect(job).to.have.property('type');",
+                  "    pm.expect(job).to.have.property('status');",
+                  "});",
+                  "",
+                  "// Store the job ID for future requests",
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('job_id', response.job._id);",
+                  "}"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
