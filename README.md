@@ -33,21 +33,25 @@ job-platform-backend/
 ## Key Features
 
 - 🔐 Secure Authentication System
+
   - JWT-based authentication
   - Role-based access control (Job Seekers & Employers)
   - Password encryption
 
 - 💼 Comprehensive Job Management
+
   - Create and manage job postings
   - Advanced search with multiple filters
   - Pagination for better performance
 
 - 📄 Resume Management
+
   - Secure resume upload via Cloudinary
   - PDF file validation
   - Automatic file optimization
 
 - 🔍 Smart Job Search
+
   - Filter by location, skills, and title
   - Sort by date and relevance
   - Real-time search results
@@ -78,18 +82,21 @@ job-platform-backend/
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/yourusername/job-platform-backend.git
 cd job-platform-backend
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Configure environment variables:
-Create a `.env` file in the root directory:
+   Create a `.env` file in the root directory:
+
 ```env
 # Server Configuration
 PORT=5000
@@ -109,6 +116,7 @@ CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ```
 
 4. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -118,6 +126,7 @@ npm run dev
 ### Authentication
 
 #### Register User
+
 ```http
 POST /api/auth/register
 Content-Type: application/json
@@ -131,6 +140,7 @@ Content-Type: application/json
 ```
 
 #### Login
+
 ```http
 POST /api/auth/login
 Content-Type: application/json
@@ -144,6 +154,7 @@ Content-Type: application/json
 ### Jobs
 
 #### Create Job (Employer only)
+
 ```http
 POST /api/jobs
 Authorization: Bearer <token>
@@ -160,6 +171,7 @@ Content-Type: application/json
 ```
 
 #### Search Jobs
+
 ```http
 GET /api/jobs?page=1&limit=10&title=developer&location=mumbai&skills=javascript
 ```
@@ -167,6 +179,7 @@ GET /api/jobs?page=1&limit=10&title=developer&location=mumbai&skills=javascript
 ### Applications
 
 #### Apply for Job
+
 ```http
 POST /api/apply
 Authorization: Bearer <token>
@@ -180,10 +193,12 @@ resume: [PDF File]
 ## Testing
 
 1. Import the Postman collection:
+
    - Use `Job_Recruitment_API.postman_collection.json`
    - Set up environment variables in Postman
 
 2. Run automated tests:
+
 ```bash
 npm test
 ```
@@ -191,17 +206,20 @@ npm test
 ## Development Workflow
 
 1. Create a new branch for your feature:
+
 ```bash
 git checkout -b feature/your-feature-name
 ```
 
 2. Make your changes and commit:
+
 ```bash
 git add .
 git commit -m "Add your feature description"
 ```
 
 3. Push to your branch:
+
 ```bash
 git push origin feature/your-feature-name
 ```
@@ -211,6 +229,7 @@ git push origin feature/your-feature-name
 ## Error Handling
 
 The API implements comprehensive error handling:
+
 - Input validation
 - Authentication errors
 - Database errors
