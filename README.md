@@ -1,4 +1,4 @@
-# Job Recruitment Platform API
+# Job Recruitment Platform Backend API
 
 A modern and efficient job recruitment platform API built with Node.js, Express, and MongoDB. This platform streamlines the job search and hiring process by connecting talented job seekers with potential employers.
 
