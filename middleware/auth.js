@@ -20,6 +20,11 @@ exports.protect = async (req, res, next) => {
       return res.status(401).json({ error: 'User not found' });
     }
 
+    // Verify that the role in the token matches the user's role
+    if (user.role !== decoded.role) {
+      return res.status(401).json({ error: 'Token role mismatch' });
+    }
+
     // Add user to request
     req.user = user;
     next();
