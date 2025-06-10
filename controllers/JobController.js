@@ -14,6 +14,14 @@ exports.createJob = async (req, res) => {
       experience 
     } = req.body;
     
+    // Validate experience format
+    const experienceRegex = /^(Fresher|[0-9]+|[0-9]+-[0-9]+|[0-9]+\+)$/;
+    if (!experienceRegex.test(experience)) {
+      return res.status(400).json({ 
+        error: 'Invalid experience format. Use formats like "Fresher", "0", "1", "5-10", or "15+"' 
+      });
+    }
+    
     const job = new Job({ 
       title, 
       description, 
@@ -29,7 +37,10 @@ exports.createJob = async (req, res) => {
     await job.save();
     res.status(201).json({ message: 'Job created successfully', job });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ error: error.message });
+    }
+    res.status(500).json({ error: 'Error creating job posting' });
   }
 };
 

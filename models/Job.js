@@ -35,16 +35,25 @@ const jobSchema = new mongoose.Schema({
   },
   salary: {
     type: String,
+    required: true,
     trim: true
   },
   type: {
     type: String,
-    enum: ['Full-time', 'Part-time', 'Contract', 'Internship'],
+    enum: ['Full-time', 'Part-time', 'Contract', 'Temporary', 'Internship'],
     default: 'Full-time'
   },
   experience: {
     type: String,
-    trim: true
+    required: true,
+    trim: true,
+    validate: {
+      validator: function(v) {
+        // Allow formats like "Fresher", "0", "1", "5-10", "15+"
+        return /^(Fresher|[0-9]+|[0-9]+-[0-9]+|[0-9]+\+)$/.test(v);
+      },
+      message: props => `${props.value} is not a valid experience level format. Use formats like "Fresher", "0", "1", "5-10", or "15+"`
+    }
   },
   status: {
     type: String,
