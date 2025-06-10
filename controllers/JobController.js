@@ -101,4 +101,22 @@ exports.listJobs = async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
+};
+
+exports.getJobDetails = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    
+    const job = await Job.findById(jobId)
+      .populate('employerId', 'name email company')
+      .select('-__v');
+
+    if (!job) {
+      return res.status(404).json({ message: 'Job not found' });
+    }
+
+    res.json(job);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 }; 

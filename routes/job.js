@@ -6,6 +6,7 @@ const { protect, authorize } = require('../middleware/auth');
 // Public routes
 router.get('/jobs/recent', JobController.getRecentJobs);
 router.get('/jobs', JobController.listJobs);
+router.get('/jobs/:jobId', JobController.getJobDetails);
 
 // Protected routes - only employers can create jobs
 router.post('/jobs', protect, authorize('employer'), JobController.createJob);
