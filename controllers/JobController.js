@@ -147,4 +147,56 @@ exports.getJobDetails = async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
+};
+
+exports.getEmployerJobs = async (req, res) => {
+  try {
+    const employerId = req.user._id; // From auth middleware
+
+    const jobs = await Job.find({ employerId })
+      .select('-__v')
+      .sort({ createdAt: -1 });
+
+    res.json(jobs);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching employer jobs' });
+  }
+};
+
+exports.updateJobStatus = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const { status } = req.body;
+    const employerId = req.user._id; // From auth middleware
+
+    // Validate status
+    if (!['active', 'closed', 'filled'].includes(status)) {
+      return res.status(400).json({ 
+        error: 'Invalid status. Status must be one of: active, closed, filled' 
+      });
+    }
+
+    // Find job and verify ownership
+    const job = await Job.findOne({ _id: jobId, employerId });
+    
+    if (!job) {
+      return res.status(404).json({ 
+        error: 'Job not found or you do not have permission to update this job' 
+      });
+    }
+
+    // Update status
+    job.status = status;
+    await job.save();
+
+    res.json({ 
+      message: 'Job status updated successfully',
+      job 
+    });
+  } catch (error) {
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ error: error.message });
+    }
+    res.status(500).json({ error: 'Error updating job status' });
+  }
 }; 
