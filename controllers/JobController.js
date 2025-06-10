@@ -11,12 +11,29 @@ exports.createJob = async (req, res) => {
       employerId,
       salary,
       type,
-      experience 
+      experience,
+      experienceLevel // Handle both field names
     } = req.body;
     
+    // Use experienceLevel if provided, otherwise use experience
+    const experienceValue = experienceLevel || experience;
+    
     // Validate experience format
-    const experienceRegex = /^(Fresher|[0-9]+|[0-9]+-[0-9]+|[0-9]+\+)$/;
-    if (!experienceRegex.test(experience)) {
+    const validFormats = [
+      'Fresher',
+      /^[0-9]+$/,  // Single number
+      /^[0-9]+-[0-9]+$/,  // Range
+      /^[0-9]+\+$/  // Number with plus
+    ];
+    
+    const isValidFormat = validFormats.some(format => {
+      if (format instanceof RegExp) {
+        return format.test(experienceValue);
+      }
+      return format === experienceValue;
+    });
+
+    if (!isValidFormat) {
       return res.status(400).json({ 
         error: 'Invalid experience format. Use formats like "Fresher", "0", "1", "5-10", or "15+"' 
       });
@@ -31,7 +48,7 @@ exports.createJob = async (req, res) => {
       employerId,
       salary,
       type,
-      experience
+      experience: experienceValue // Use the validated value
     });
     
     await job.save();

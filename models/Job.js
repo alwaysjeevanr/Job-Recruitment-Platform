@@ -50,7 +50,19 @@ const jobSchema = new mongoose.Schema({
     validate: {
       validator: function(v) {
         // Allow formats like "Fresher", "0", "1", "5-10", "15+"
-        return /^(Fresher|[0-9]+|[0-9]+-[0-9]+|[0-9]+\+)$/.test(v);
+        const validFormats = [
+          'Fresher',
+          /^[0-9]+$/,  // Single number
+          /^[0-9]+-[0-9]+$/,  // Range
+          /^[0-9]+\+$/  // Number with plus
+        ];
+        
+        return validFormats.some(format => {
+          if (format instanceof RegExp) {
+            return format.test(v);
+          }
+          return format === v;
+        });
       },
       message: props => `${props.value} is not a valid experience level format. Use formats like "Fresher", "0", "1", "5-10", or "15+"`
     }
