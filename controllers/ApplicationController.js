@@ -1,6 +1,8 @@
 const Application = require('../models/Application');
+const Job = require('../models/Job');
 const cloudinary = require('../config/cloudinary');
 const { Readable } = require('stream');
+const mongoose = require('mongoose');
 
 // Helper function to upload buffer to Cloudinary
 const uploadToCloudinary = (buffer) => {
@@ -24,32 +26,96 @@ const uploadToCloudinary = (buffer) => {
 
 exports.apply = async (req, res) => {
   try {
+    // Validate file
     if (!req.file) {
-      return res.status(400).json({ error: 'Please upload a resume' });
+      return res.status(400).json({ error: 'Resume file is required' });
     }
 
-    const { jobId, seekerId } = req.body;
-    
+    // Validate jobId
+    const { jobId } = req.body;
+    if (!jobId) {
+      return res.status(400).json({ error: 'Job ID is required' });
+    }
+
+    // Validate jobId format
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+      return res.status(400).json({ error: 'Invalid job ID format' });
+    }
+
+    // Check if job exists
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    // Check if job is active
+    if (job.status !== 'active') {
+      return res.status(400).json({ error: 'This job is no longer accepting applications' });
+    }
+
+    // Check if user has already applied
+    const existingApplication = await Application.findOne({
+      jobId,
+      seekerId: req.user._id
+    });
+
+    if (existingApplication) {
+      return res.status(400).json({ error: 'You have already applied for this job' });
+    }
+
     // Upload file to Cloudinary
     const result = await uploadToCloudinary(req.file.buffer);
     
-    // Create application with Cloudinary URL
+    // Create application
     const application = new Application({
       jobId,
-      seekerId,
+      seekerId: req.user._id,
       resumeUrl: result.secure_url
     });
     
     await application.save();
+
+    // Populate job and seeker details for response
+    await application.populate([
+      { path: 'jobId', select: 'title employerId' },
+      { path: 'seekerId', select: 'name' }
+    ]);
+
     res.status(201).json({ 
-      message: 'Application submitted successfully', 
-      application 
+      message: 'Application submitted successfully',
+      application: {
+        _id: application._id,
+        job: {
+          _id: application.jobId._id,
+          title: application.jobId.title
+        },
+        applicant: {
+          _id: application.seekerId._id,
+          name: application.seekerId.name
+        },
+        appliedAt: application.appliedAt,
+        status: application.status,
+        resumeUrl: application.resumeUrl
+      }
     });
   } catch (error) {
+    console.error('Application error:', error);
+    
+    // Handle specific error cases
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ error: error.message });
+    }
+    
     if (error.code === 11000) {
       return res.status(400).json({ error: 'You have already applied for this job' });
     }
-    res.status(400).json({ error: error.message });
+
+    // Handle Cloudinary errors
+    if (error.http_code) {
+      return res.status(400).json({ error: 'Error uploading resume. Please try again.' });
+    }
+
+    res.status(500).json({ error: 'Error submitting application. Please try again.' });
   }
 };
 
