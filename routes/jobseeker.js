@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const JobSeekerController = require('../controllers/JobSeekerController');
+const jobseekerController = require('../controllers/jobseekerController');
 const { protect, authorize } = require('../middleware/auth');
 const { upload, handleMulterError } = require('../middleware/upload');
 
@@ -8,13 +8,13 @@ const { upload, handleMulterError } = require('../middleware/upload');
 router.get('/profile', 
   protect, 
   authorize('jobseeker'), 
-  JobSeekerController.getProfile
+  jobseekerController.getProfile
 );
 
 router.put('/profile', 
   protect, 
   authorize('jobseeker'), 
-  JobSeekerController.updateProfile
+  jobseekerController.updateProfile
 );
 
 // Resume upload
@@ -23,7 +23,7 @@ router.post('/resume',
   authorize('jobseeker'), 
   upload.single('resume'),
   handleMulterError,
-  JobSeekerController.uploadResume
+  jobseekerController.uploadResume
 );
 
 // Get all applications for the logged-in job seeker
