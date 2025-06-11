@@ -361,7 +361,76 @@
       "name": "Job Seeker",
       "item": [
         {
-          "name": "Get My Applications",
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/jobseeker/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobseeker", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"phone\": \"+1234567890\",\n    \"location\": \"New York, NY\",\n    \"skills\": [\"JavaScript\", \"React\", \"Node.js\", \"MongoDB\"],\n    \"experience\": [\n        {\n            \"company\": \"Tech Solutions Inc\",\n            \"position\": \"Full Stack Developer\",\n            \"startDate\": \"2020-01-01\",\n            \"endDate\": \"2023-12-31\",\n            \"description\": \"Developed and maintained web applications using React and Node.js\"\n        }\n    ],\n    \"education\": [\n        {\n            \"institution\": \"University of Technology\",\n            \"degree\": \"Bachelor of Science in Computer Science\",\n            \"field\": \"Computer Science\",\n            \"startDate\": \"2016-09-01\",\n            \"endDate\": \"2020-05-31\"\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jobseeker/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobseeker", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Upload Resume",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "resume",
+                  "type": "file",
+                  "src": "/path/to/resume.pdf"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jobseeker/resume",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobseeker", "resume"]
+            }
+          }
+        },
+        {
+          "name": "Get Applications",
           "request": {
             "method": "GET",
             "header": [
@@ -374,8 +443,7 @@
               "raw": "{{base_url}}/api/jobseeker/applications",
               "host": ["{{base_url}}"],
               "path": ["api", "jobseeker", "applications"]
-            },
-            "description": "Get all applications for the logged-in job seeker. Requires authentication and jobseeker role."
+            }
           }
         }
       ]
@@ -386,9 +454,7 @@
       "listen": "prerequest",
       "script": {
         "type": "text/javascript",
-        "exec": [
-          ""
-        ]
+        "exec": [""]
       }
     },
     {
@@ -457,4 +523,4 @@
       "type": "string"
     }
   ]
-} 
+}
