@@ -58,6 +58,16 @@ app.use(express.urlencoded({ extended: true }));
 // Response formatter middleware
 app.use(responseFormatter);
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Welcome to Job Recruitment API',
+    documentation: '/api-docs',
+    health: '/api/health'
+  });
+});
+
 // API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
@@ -85,7 +95,7 @@ app.use((req, res) => {
   res.status(404).json({
     success: false,
     error: {
-      message: 'Route not found',
+      message: `Route not found: ${req.originalUrl}`,
       code: 'NOT_FOUND'
     }
   });

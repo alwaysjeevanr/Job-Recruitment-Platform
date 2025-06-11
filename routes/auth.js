@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const AuthController = require('../controllers/AuthController');
+const { protect } = require('../middleware/auth');
 
 // Input validation middleware
 const validateRegister = (req, res, next) => {
@@ -34,5 +35,7 @@ const validateLogin = (req, res, next) => {
 // Routes
 router.post('/register', validateRegister, AuthController.register);
 router.post('/login', validateLogin, AuthController.login);
+router.get('/me', protect, AuthController.getProfile);
+router.put('/update-profile', protect, AuthController.updateProfile);
 
 module.exports = router; 
