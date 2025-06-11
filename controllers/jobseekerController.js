@@ -136,10 +136,16 @@ exports.uploadResume = async (req, res) => {
       });
     }
 
-    // Upload to Cloudinary
+    // Upload to Cloudinary with correct configuration
     const result = await cloudinary.uploader.upload(req.file.path, {
+      resource_type: 'raw',  // Important for PDFs/DOCX
       folder: 'resumes',
-      resource_type: 'raw'
+      type: 'upload',        // Ensures public access
+      format: 'pdf',         // Preferred format
+      public_id: `resume_${req.user.id}_${Date.now()}`, // Unique identifier
+      overwrite: true,       // Overwrite if exists
+      invalidate: true,      // Invalidate CDN cache
+      access_mode: 'public'  // Ensure public access
     });
 
     // Update jobseeker profile with resume URL
@@ -154,17 +160,23 @@ exports.uploadResume = async (req, res) => {
       });
     }
 
-    jobseeker.resume = result.secure_url;
+    // Store both secure URL and public ID
+    jobseeker.resume = {
+      url: result.secure_url,
+      public_id: result.public_id
+    };
     await jobseeker.save();
 
     res.json({
       success: true,
       data: {
-        resumeUrl: result.secure_url
+        resumeUrl: result.secure_url,
+        publicId: result.public_id
       },
       message: 'Resume uploaded successfully'
     });
   } catch (error) {
+    console.error('Cloudinary upload error:', error);
     res.status(400).json({
       success: false,
       error: {
