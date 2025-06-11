@@ -81,4 +81,94 @@ exports.login = async (req, res) => {
       error: error.message || 'Error logging in'
     });
   }
+};
+
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        error: {
+          message: 'User not found',
+          code: 'USER_NOT_FOUND'
+        }
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    res.status(400).json({ 
+      success: false,
+      error: {
+        message: error.message || 'Error fetching profile',
+        code: 'PROFILE_FETCH_ERROR'
+      }
+    });
+  }
+};
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, email, currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        error: {
+          message: 'User not found',
+          code: 'USER_NOT_FOUND'
+        }
+      });
+    }
+
+    // Update basic info
+    if (name) user.name = name;
+    if (email) user.email = email;
+
+    // Update password if provided
+    if (currentPassword && newPassword) {
+      const isMatch = await user.comparePassword(currentPassword);
+      if (!isMatch) {
+        return res.status(401).json({ 
+          success: false,
+          error: {
+            message: 'Current password is incorrect',
+            code: 'INVALID_PASSWORD'
+          }
+        });
+      }
+      user.password = newPassword;
+    }
+
+    await user.save();
+
+    res.json({
+      success: true,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      },
+      message: 'Profile updated successfully'
+    });
+  } catch (error) {
+    res.status(400).json({ 
+      success: false,
+      error: {
+        message: error.message || 'Error updating profile',
+        code: 'PROFILE_UPDATE_ERROR'
+      }
+    });
+  }
 }; 

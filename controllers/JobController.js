@@ -81,9 +81,9 @@ exports.getRecentJobs = async (req, res) => {
 exports.listJobs = async (req, res) => {
   try {
     const { 
-      title, 
+      search,
       location, 
-      skills, 
+      experience,
       type,
       page = 1, 
       limit = 10 
@@ -91,10 +91,46 @@ exports.listJobs = async (req, res) => {
     
     // Build query
     const query = { status: 'active' };
-    if (title) query.title = { $regex: title, $options: 'i' };
-    if (location) query.location = { $regex: location, $options: 'i' };
-    if (skills) query.skills = { $in: skills.split(',') };
-    if (type) query.type = type;
+
+    // Search across multiple fields
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { skills: { $regex: search, $options: 'i' } },
+        { company: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Location filter
+    if (location) {
+      query.location = { $regex: location, $options: 'i' };
+    }
+
+    // Experience filter
+    if (experience) {
+      // Handle different experience level formats
+      switch (experience.toLowerCase()) {
+        case 'entry-level':
+        case 'fresher':
+          query.experience = { $in: ['Fresher', '0', '0-1', '1'] };
+          break;
+        case 'mid-level':
+          query.experience = { $in: ['2-5', '3-5', '5'] };
+          break;
+        case 'senior-level':
+          query.experience = { $in: ['5-10', '10+', '15+'] };
+          break;
+        default:
+          // If it's a specific number or range, use it directly
+          query.experience = experience;
+      }
+    }
+
+    // Job type filter
+    if (type) {
+      query.type = type;
+    }
 
     // Calculate pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -104,7 +140,7 @@ exports.listJobs = async (req, res) => {
     
     // Get paginated results with employer information
     const jobs = await Job.find(query)
-      .populate('employerId', 'name email')
+      .populate('employerId', 'name email company')
       .select('-__v')
       .skip(skip)
       .limit(parseInt(limit))
@@ -116,18 +152,27 @@ exports.listJobs = async (req, res) => {
     const hasPrevPage = page > 1;
 
     res.json({
-      jobs,
-      pagination: {
-        total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        totalPages,
-        hasNextPage,
-        hasPrevPage
+      success: true,
+      data: {
+        jobs,
+        pagination: {
+          total,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          totalPages,
+          hasNextPage,
+          hasPrevPage
+        }
       }
     });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ 
+      success: false,
+      error: {
+        message: error.message || 'Error fetching jobs',
+        code: 'JOBS_FETCH_ERROR'
+      }
+    });
   }
 };
 
