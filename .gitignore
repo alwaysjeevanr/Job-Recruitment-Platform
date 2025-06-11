@@ -1,3 +1,7 @@
+#Files and directories to ignore in a Node.js project
+BACKEND_DOCUMENTATION.md
+Job_Recruitment_API.postman_collection.json
+
 # Environment variables
 .env
 .env.local
