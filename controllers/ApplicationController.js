@@ -172,4 +172,148 @@ exports.listApplications = async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
+};
+
+// Get all applications for the logged-in job seeker
+exports.getJobSeekerApplications = async (req, res) => {
+  try {
+    const applications = await Application.find({ seekerId: req.user._id })
+      .populate({
+        path: 'jobId',
+        select: '_id title location salary type employerId',
+        populate: {
+          path: 'employerId',
+          select: 'name',
+          model: 'User'
+        }
+      })
+      .populate('seekerId', '_id name email')
+      .sort({ appliedAt: -1 });
+
+    const formattedApplications = applications.map(app => ({
+      _id: app._id,
+      job: {
+        _id: app.jobId._id,
+        title: app.jobId.title,
+        company: app.jobId.employerId.name,
+        location: app.jobId.location,
+        salary: app.jobId.salary,
+        type: app.jobId.type
+      },
+      applicant: {
+        _id: app.seekerId._id,
+        name: app.seekerId.name,
+        email: app.seekerId.email
+      },
+      appliedAt: app.appliedAt,
+      status: app.status,
+      resumeLink: app.resumeUrl,
+      __v: app.__v
+    }));
+
+    res.json(formattedApplications);
+  } catch (error) {
+    console.error('Error fetching job seeker applications:', error);
+    res.status(500).json({ error: 'Error fetching applications' });
+  }
+};
+
+// Delete an application
+exports.deleteApplication = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate application ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid application ID' });
+    }
+
+    // Find the application
+    const application = await Application.findById(id);
+
+    if (!application) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+
+    // Check if the authenticated user is the owner of the application
+    if (application.seekerId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'Not authorized to delete this application' });
+    }
+
+    // Delete the application
+    await application.deleteOne();
+
+    res.json({ message: 'Application deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting application:', error);
+    res.status(500).json({ error: 'Error deleting application' });
+  }
+};
+
+// Update application status
+exports.updateApplicationStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    // Validate application ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid application ID' });
+    }
+
+    // Validate status
+    if (!status || !['pending', 'accepted', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status. Must be pending, accepted, or rejected' });
+    }
+
+    // Find the application and populate job details
+    const application = await Application.findById(id)
+      .populate({
+        path: 'jobId',
+        select: '_id title employerId',
+        populate: {
+          path: 'employerId',
+          select: 'name',
+          model: 'User'
+        }
+      })
+      .populate('seekerId', '_id name');
+
+    if (!application) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+
+    // Check if the authenticated user is the employer who posted the job
+    if (application.jobId.employerId._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'Not authorized to update this application' });
+    }
+
+    // Update the status
+    application.status = status;
+    await application.save();
+
+    // Format the response
+    const formattedApplication = {
+      _id: application._id,
+      job: {
+        _id: application.jobId._id,
+        title: application.jobId.title
+      },
+      applicant: {
+        _id: application.seekerId._id,
+        name: application.seekerId.name
+      },
+      appliedAt: application.appliedAt,
+      status: application.status,
+      resumeLink: application.resumeUrl
+    };
+
+    res.json({
+      message: 'Application status updated successfully',
+      application: formattedApplication
+    });
+  } catch (error) {
+    console.error('Error updating application status:', error);
+    res.status(500).json({ error: 'Error updating application status' });
+  }
 }; 

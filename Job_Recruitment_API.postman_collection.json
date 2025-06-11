@@ -278,6 +278,82 @@
               "path": ["api", "applications", "{{job_id}}"]
             }
           }
+        },
+        {
+          "name": "Get Job Seeker Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/jobseeker/applications",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobseeker", "applications"]
+            },
+            "description": "Get all applications submitted by the authenticated job seeker"
+          }
+        },
+        {
+          "name": "Delete Application",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/applications/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "applications", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "application_id",
+                  "description": "ID of the application to delete"
+                }
+              ]
+            },
+            "description": "Delete a job application. Only the job seeker who submitted the application can delete it."
+          }
+        },
+        {
+          "name": "Update Application Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"accepted\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/applications/:id/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "applications", ":id", "status"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "application_id",
+                  "description": "ID of the application to update"
+                }
+              ]
+            },
+            "description": "Update the status of a job application. Only the employer who posted the job can update the status."
+          }
         }
       ]
     },
