@@ -4,13 +4,13 @@ const JobController = require('../controllers/JobController');
 const { protect, authorize } = require('../middleware/auth');
 
 // Public routes
-router.get('/jobs/recent', JobController.getRecentJobs);
-router.get('/jobs', JobController.listJobs);
-router.get('/jobs/:jobId', JobController.getJobDetails);
+router.get('/recent', JobController.getRecentJobs);
+router.get('/', JobController.listJobs);
+router.get('/:jobId', JobController.getJobDetails);
 
 // Protected routes - employer only
-router.post('/jobs', protect, authorize('employer'), JobController.createJob);
-router.get('/employer/jobs', protect, authorize('employer'), JobController.getEmployerJobs);
-router.put('/jobs/:jobId/status', protect, authorize('employer'), JobController.updateJobStatus);
+router.post('/', protect, authorize('employer'), JobController.createJob);
+router.get('/employer/list', protect, authorize('employer'), JobController.getEmployerJobs);
+router.put('/:jobId/status', protect, authorize('employer'), JobController.updateJobStatus);
 
 module.exports = router; 

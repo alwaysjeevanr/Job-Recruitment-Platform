@@ -73,8 +73,8 @@ app.get('/api/health', (req, res) => {
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api', require('./routes/job'));
-app.use('/api', require('./routes/application'));
+app.use('/api/jobs', require('./routes/job'));
+app.use('/api/applications', require('./routes/application'));
 app.use('/api/jobseeker', require('./routes/jobseeker'));
 
 // Error handling middleware
