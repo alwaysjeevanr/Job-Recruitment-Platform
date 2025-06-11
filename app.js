@@ -1,7 +1,15 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const swaggerUi = require('swagger-ui-express');
+const path = require('path');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+const logger = require('./config/logger');
+const { errorHandler } = require('./middleware/errorHandler');
+const responseFormatter = require('./middleware/responseFormatter');
+const swaggerDocs = require('./config/swagger');
 
 // Load environment variables
 dotenv.config();
@@ -12,10 +20,50 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// Middleware
-app.use(cors());
+// Security middleware
+app.use(helmet());
+
+// CORS configuration
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:5173'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+app.use(cors(corsOptions));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000, // 15 minutes
+  max: process.env.RATE_LIMIT_MAX_REQUESTS || 100, // limit each IP to 100 requests per windowMs
+  message: {
+    success: false,
+    error: {
+      message: 'Too many requests from this IP, please try again later'
+    }
+  }
+});
+app.use('/api/', limiter);
+
+// Body parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Response formatter middleware
+app.use(responseFormatter);
+
+// API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV
+  });
+});
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -23,28 +71,16 @@ app.use('/api', require('./routes/job'));
 app.use('/api', require('./routes/application'));
 app.use('/api/jobseeker', require('./routes/jobseeker'));
 
-// Basic route for testing
-app.get('/', (req, res) => {
-  res.send('Job Recruitment Platform API is running');
-});
-
 // Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({
-    error: {
-      message: err.message || 'Internal Server Error',
-      status: err.status || 500
-    }
-  });
-});
+app.use(errorHandler);
 
 // Handle 404 routes
 app.use((req, res) => {
   res.status(404).json({
+    success: false,
     error: {
       message: 'Route not found',
-      status: 404
+      code: 'NOT_FOUND'
     }
   });
 });
@@ -52,5 +88,6 @@ app.use((req, res) => {
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  logger.info(`Server is running on port ${PORT}`);
+  logger.info(`API Documentation available at http://localhost:${PORT}/api-docs`);
 }); 
