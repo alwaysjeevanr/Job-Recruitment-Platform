@@ -21,6 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api', require('./routes/job'));
 app.use('/api', require('./routes/application'));
+app.use('/api/jobseeker', require('./routes/jobseeker'));
 
 // Basic route for testing
 app.get('/', (req, res) => {

@@ -280,6 +280,29 @@
           }
         }
       ]
+    },
+    {
+      "name": "Job Seeker",
+      "item": [
+        {
+          "name": "Get My Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/jobseeker/applications",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobseeker", "applications"]
+            },
+            "description": "Get all applications for the logged-in job seeker. Requires authentication and jobseeker role."
+          }
+        }
+      ]
     }
   ],
   "event": [

@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "test": "jest --detectOpenHandles",
+    "test:watch": "jest --watch"
   },
   "keywords": [],
   "author": "",
@@ -18,5 +20,11 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.1",
     "multer": "^2.0.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.4",
+    "@babel/core": "^7.24.0",
+    "@babel/preset-env": "^7.24.0"
   }
 }
