@@ -194,4 +194,77 @@ exports.uploadResume = async (req, res) => {
       }
     });
   }
+};
+
+exports.uploadProfileResume = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Please upload a resume file',
+          code: 'NO_FILE_UPLOADED'
+        }
+      });
+    }
+
+    // Validate file type
+    if (req.file.mimetype !== 'application/pdf') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Only PDF files are allowed',
+          code: 'INVALID_FILE_TYPE'
+        }
+      });
+    }
+
+    // Upload to Cloudinary with correct configuration
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      resource_type: 'auto',
+      folder: 'resumes',
+      use_filename: true,
+      unique_filename: true
+    });
+
+    // Generate download URL with fl_attachment parameter
+    const downloadUrl = result.secure_url.replace('/upload/', '/upload/fl_attachment:Jeevan_R_Senior_Resume/');
+
+    // Update jobseeker profile with resume URLs
+    const jobseeker = await JobSeeker.findOne({ user: req.user.id });
+    if (!jobseeker) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          message: 'Job seeker profile not found',
+          code: 'PROFILE_NOT_FOUND'
+        }
+      });
+    }
+
+    // Store both URLs
+    jobseeker.resume = {
+      resumeUrl: result.secure_url,
+      downloadUrl: downloadUrl
+    };
+    await jobseeker.save();
+
+    res.json({
+      success: true,
+      data: {
+        resumeUrl: result.secure_url,
+        downloadUrl: downloadUrl
+      },
+      message: 'Resume uploaded successfully'
+    });
+  } catch (error) {
+    console.error('Cloudinary upload error:', error);
+    res.status(400).json({
+      success: false,
+      error: {
+        message: error.message || 'Error uploading resume',
+        code: 'RESUME_UPLOAD_ERROR'
+      }
+    });
+  }
 }; 

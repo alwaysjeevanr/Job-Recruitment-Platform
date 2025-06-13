@@ -26,6 +26,15 @@ router.post('/resume',
   jobseekerController.uploadResume
 );
 
+// Profile resume upload
+router.post('/profile/upload-resume', 
+  protect, 
+  authorize('jobseeker'), 
+  upload.single('resume'),
+  handleMulterError,
+  jobseekerController.uploadProfileResume
+);
+
 // Get all applications for the logged-in job seeker
 router.get('/applications', 
   protect, 
