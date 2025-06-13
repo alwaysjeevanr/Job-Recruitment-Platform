@@ -11,6 +11,9 @@ const uploadToCloudinary = (buffer) => {
       {
         folder: 'resumes',
         resource_type: 'raw',
+        use_filename: true,
+        unique_filename: true,
+        access_mode: 'public',
         format: 'pdf'
       },
       (error, result) => {
@@ -29,6 +32,11 @@ exports.apply = async (req, res) => {
     // Validate file
     if (!req.file) {
       return res.status(400).json({ error: 'Resume file is required' });
+    }
+
+    // Validate file type
+    if (req.file.mimetype !== 'application/pdf') {
+      return res.status(400).json({ error: 'Only PDF files are allowed' });
     }
 
     // Validate jobId
@@ -70,7 +78,8 @@ exports.apply = async (req, res) => {
     const application = new Application({
       jobId,
       seekerId: req.user._id,
-      resumeUrl: result.secure_url
+      resumeUrl: result.secure_url,
+      resumePublicId: result.public_id
     });
     
     await application.save();

@@ -136,16 +136,25 @@ exports.uploadResume = async (req, res) => {
       });
     }
 
+    // Validate file type
+    if (req.file.mimetype !== 'application/pdf') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Only PDF files are allowed',
+          code: 'INVALID_FILE_TYPE'
+        }
+      });
+    }
+
     // Upload to Cloudinary with correct configuration
     const result = await cloudinary.uploader.upload(req.file.path, {
-      resource_type: 'raw',  // Important for PDFs/DOCX
+      resource_type: 'raw',
       folder: 'resumes',
-      type: 'upload',        // Ensures public access
-      format: 'pdf',         // Preferred format
-      public_id: `resume_${req.user.id}_${Date.now()}`, // Unique identifier
-      overwrite: true,       // Overwrite if exists
-      invalidate: true,      // Invalidate CDN cache
-      access_mode: 'public'  // Ensure public access
+      use_filename: true,
+      unique_filename: true,
+      access_mode: 'public',
+      format: 'pdf'
     });
 
     // Update jobseeker profile with resume URL
