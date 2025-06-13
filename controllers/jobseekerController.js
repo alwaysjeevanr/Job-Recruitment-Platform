@@ -147,9 +147,9 @@ exports.uploadResume = async (req, res) => {
       });
     }
 
-    // Upload to Cloudinary with correct configuration
+    // Upload to Cloudinary with correct configuration for direct PDF viewing
     const result = await cloudinary.uploader.upload(req.file.path, {
-      resource_type: 'raw',
+      resource_type: 'image',
       folder: 'resumes',
       use_filename: true,
       unique_filename: true,
@@ -219,12 +219,13 @@ exports.uploadProfileResume = async (req, res) => {
       });
     }
 
-    // Upload to Cloudinary with correct configuration
+    // Upload to Cloudinary with correct configuration for direct PDF viewing
     const result = await cloudinary.uploader.upload(req.file.path, {
-      resource_type: 'auto',
+      resource_type: 'image',
       folder: 'resumes',
       use_filename: true,
-      unique_filename: true
+      unique_filename: true,
+      format: 'pdf'
     });
 
     // Generate download URL with fl_attachment parameter

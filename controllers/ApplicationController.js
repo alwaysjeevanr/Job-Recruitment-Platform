@@ -10,7 +10,7 @@ const uploadToCloudinary = (buffer) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder: 'resumes',
-        resource_type: 'raw',
+        resource_type: 'image',
         use_filename: true,
         unique_filename: true,
         access_mode: 'public',
