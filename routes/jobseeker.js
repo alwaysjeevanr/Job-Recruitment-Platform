@@ -27,7 +27,7 @@ router.post('/resume',
 );
 
 // Profile resume upload
-router.post('/profile/upload-resume', 
+router.post('/upload-resume', 
   protect, 
   authorize('jobseeker'), 
   upload.single('resume'),

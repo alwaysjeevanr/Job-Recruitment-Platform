@@ -418,15 +418,16 @@
                 {
                   "key": "resume",
                   "type": "file",
-                  "src": "/path/to/resume.pdf"
+                  "src": "/path/to/your/resume.pdf"
                 }
               ]
             },
             "url": {
-              "raw": "{{base_url}}/api/jobseeker/resume",
+              "raw": "{{base_url}}/api/jobseeker/upload-resume",
               "host": ["{{base_url}}"],
-              "path": ["api", "jobseeker", "resume"]
-            }
+              "path": ["api", "jobseeker", "upload-resume"]
+            },
+            "description": "Upload a resume PDF file. Max size: 5MB"
           }
         },
         {
