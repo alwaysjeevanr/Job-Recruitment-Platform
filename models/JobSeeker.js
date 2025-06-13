@@ -59,17 +59,7 @@ const jobSeekerSchema = new mongoose.Schema({
       type: Number,
       required: true
     }
-  }],
-  resume: {
-    resumeUrl: {
-      type: String,
-      trim: true
-    },
-    downloadUrl: {
-      type: String,
-      trim: true
-    }
-  }
+  }]
 }, {
   timestamps: true
 });

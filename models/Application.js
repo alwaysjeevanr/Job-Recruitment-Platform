@@ -20,6 +20,14 @@ const applicationSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  resumePublicId: {
+    type: String,
+    required: true // Cloudinary public ID for resume
+  },
+  downloadUrl: {
+    type: String,
+    required: true // Downloadable URL with fl_attachment
+  },
   appliedAt: {
     type: Date,
     default: Date.now

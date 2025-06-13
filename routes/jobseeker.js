@@ -11,28 +11,11 @@ router.get('/profile',
   jobseekerController.getProfile
 );
 
+// Update job seeker profile
 router.put('/profile', 
   protect, 
   authorize('jobseeker'), 
   jobseekerController.updateProfile
-);
-
-// Resume upload
-router.post('/resume', 
-  protect, 
-  authorize('jobseeker'), 
-  upload.single('resume'),
-  handleMulterError,
-  jobseekerController.uploadResume
-);
-
-// Profile resume upload
-router.post('/upload-resume', 
-  protect, 
-  authorize('jobseeker'), 
-  upload.single('resume'),
-  handleMulterError,
-  jobseekerController.uploadProfileResume
 );
 
 // Get all applications for the logged-in job seeker

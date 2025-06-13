@@ -3,6 +3,7 @@ const Job = require('../models/Job');
 const cloudinary = require('../config/cloudinary');
 const { Readable } = require('stream');
 const mongoose = require('mongoose');
+const User = require('../models/User');
 
 // Helper function to upload buffer to Cloudinary
 const uploadToCloudinary = (buffer) => {
@@ -73,13 +74,30 @@ exports.apply = async (req, res) => {
 
     // Upload file to Cloudinary
     const result = await uploadToCloudinary(req.file.buffer);
-    
+
+    // Fetch job seeker's name and job title for the download filename
+    const jobseeker = await User.findById(req.user._id).select('name');
+    const jobTitle = job.title;
+
+    if (!jobseeker || !jobTitle) {
+      // This should ideally not happen if previous checks pass, but good for robustness
+      return res.status(500).json({ error: 'Could not retrieve job seeker or job details for resume naming.' });
+    }
+
+    // Sanitize names for filename
+    const sanitizedJobseekerName = jobseeker.name.replace(/[^a-zA-Z0-9_.]/g, '_');
+    const sanitizedJobTitle = jobTitle.replace(/[^a-zA-Z0-9_.]/g, '_');
+
+    const filename = `${sanitizedJobseekerName}_${sanitizedJobTitle}_Resume.pdf`;
+    const downloadUrl = result.secure_url.replace('/upload/', `/upload/fl_attachment:${filename}/`);
+
     // Create application
     const application = new Application({
       jobId,
       seekerId: req.user._id,
       resumeUrl: result.secure_url,
-      resumePublicId: result.public_id
+      resumePublicId: result.public_id,
+      downloadUrl: downloadUrl
     });
     
     await application.save();
@@ -104,7 +122,8 @@ exports.apply = async (req, res) => {
         },
         appliedAt: application.appliedAt,
         status: application.status,
-        resumeUrl: application.resumeUrl
+        resumeUrl: application.resumeUrl,
+        downloadUrl: application.downloadUrl
       }
     });
   } catch (error) {

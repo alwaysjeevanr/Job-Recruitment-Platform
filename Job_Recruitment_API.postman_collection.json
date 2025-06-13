@@ -241,66 +241,29 @@
                 {
                   "key": "jobId",
                   "value": "{{job_id}}",
-                  "type": "text"
-                },
-                {
-                  "key": "seekerId",
-                  "value": "{{seeker_id}}",
-                  "type": "text"
+                  "type": "text",
+                  "description": "ID of the job to apply for"
                 },
                 {
                   "key": "resume",
                   "type": "file",
-                  "src": "/path/to/resume.pdf"
+                  "src": "/path/to/your/resume.pdf",
+                  "description": "PDF resume file (Max 5MB)"
                 }
               ]
             },
             "url": {
-              "raw": "{{base_url}}/api/apply",
+              "raw": "{{base_url}}/api/applications",
               "host": ["{{base_url}}"],
-              "path": ["api", "apply"]
-            }
-          }
-        },
-        {
-          "name": "List Applications",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/applications/{{job_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "applications", "{{job_id}}"]
-            }
-          }
-        },
-        {
-          "name": "Get Job Seeker Applications",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/jobseeker/applications",
-              "host": ["{{base_url}}"],
-              "path": ["api", "jobseeker", "applications"]
+              "path": ["api", "applications"]
             },
-            "description": "Get all applications submitted by the authenticated job seeker"
+            "description": "Submit a job application with a resume. Requires jobId and a PDF resume file."
           }
         },
         {
-          "name": "Delete Application",
+          "name": "Get Job Seeker's Applications",
           "request": {
-            "method": "DELETE",
+            "method": "GET",
             "header": [
               {
                 "key": "Authorization",
@@ -308,18 +271,54 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/applications/:id",
+              "raw": "{{base_url}}/api/applications/jobseeker",
               "host": ["{{base_url}}"],
-              "path": ["api", "applications", ":id"],
+              "path": ["api", "applications", "jobseeker"]
+            },
+            "description": "Get all applications submitted by the logged-in job seeker."
+          }
+        },
+        {
+          "name": "Get Employer's Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/employer/applications",
+              "host": ["{{base_url}}"],
+              "path": ["api", "employer", "applications"]
+            },
+            "description": "Get all applications for jobs posted by the logged-in employer."
+          }
+        },
+        {
+          "name": "Get Applications for a Specific Job",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/applications/:jobId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "applications", ":jobId"],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "application_id",
-                  "description": "ID of the application to delete"
+                  "key": "jobId",
+                  "value": "job123",
+                  "description": "ID of the job to fetch applications for"
                 }
               ]
             },
-            "description": "Delete a job application. Only the job seeker who submitted the application can delete it."
+            "description": "Get all applications for a specific job (employer only)."
           }
         },
         {
@@ -328,12 +327,12 @@
             "method": "PUT",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              },
-              {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
               }
             ],
             "body": {
@@ -341,18 +340,18 @@
               "raw": "{\n    \"status\": \"accepted\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/applications/:id/status",
+              "raw": "{{base_url}}/api/applications/:applicationId/status",
               "host": ["{{base_url}}"],
-              "path": ["api", "applications", ":id", "status"],
+              "path": ["api", "applications", ":applicationId", "status"],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "application_id",
+                  "key": "applicationId",
+                  "value": "app123",
                   "description": "ID of the application to update"
                 }
               ]
             },
-            "description": "Update the status of a job application. Only the employer who posted the job can update the status."
+            "description": "Update the status of a specific job application (employer only)."
           }
         }
       ]
@@ -361,7 +360,7 @@
       "name": "Job Seeker",
       "item": [
         {
-          "name": "Get Profile",
+          "name": "Get Job Seeker Profile",
           "request": {
             "method": "GET",
             "header": [
@@ -374,11 +373,12 @@
               "raw": "{{base_url}}/api/jobseeker/profile",
               "host": ["{{base_url}}"],
               "path": ["api", "jobseeker", "profile"]
-            }
+            },
+            "description": "Get the profile details of the logged-in job seeker."
           }
         },
         {
-          "name": "Update Profile",
+          "name": "Update Job Seeker Profile",
           "request": {
             "method": "PUT",
             "header": [
@@ -393,59 +393,31 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"phone\": \"+1234567890\",\n    \"location\": \"New York, NY\",\n    \"skills\": [\"JavaScript\", \"React\", \"Node.js\", \"MongoDB\"],\n    \"experience\": [\n        {\n            \"company\": \"Tech Solutions Inc\",\n            \"position\": \"Full Stack Developer\",\n            \"startDate\": \"2020-01-01\",\n            \"endDate\": \"2023-12-31\",\n            \"description\": \"Developed and maintained web applications using React and Node.js\"\n        }\n    ],\n    \"education\": [\n        {\n            \"institution\": \"University of Technology\",\n            \"degree\": \"Bachelor of Science in Computer Science\",\n            \"field\": \"Computer Science\",\n            \"startDate\": \"2016-09-01\",\n            \"endDate\": \"2020-05-31\"\n        }\n    ]\n}"
+              "raw": "{\n    \"phone\": \"123-456-7890\",\n    \"location\": \"Remote\",\n    \"skills\": [\"JavaScript\", \"React\", \"Node.js\"],\n    \"experience\": [\n        {\n            \"company\": \"ABC Corp\",\n            \"position\": \"Software Engineer\",\n            \"duration\": \"2 years\",\n            \"description\": \"Developed web applications\"\n        }\n    ],\n    \"education\": [\n        {\n            \"institution\": \"University of Example\",\n            \"degree\": \"B.S. in Computer Science\",\n            \"field\": \"Computer Science\",\n            \"graduationYear\": 2020\n        }\n    ]\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/jobseeker/profile",
               "host": ["{{base_url}}"],
               "path": ["api", "jobseeker", "profile"]
-            }
-          }
-        },
-        {
-          "name": "Upload Resume",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "resume",
-                  "type": "file",
-                  "src": "/path/to/your/resume.pdf"
-                }
-              ]
             },
-            "url": {
-              "raw": "{{base_url}}/api/jobseeker/upload-resume",
-              "host": ["{{base_url}}"],
-              "path": ["api", "jobseeker", "upload-resume"]
-            },
-            "description": "Upload a resume PDF file. Max size: 5MB"
+            "description": "Update the profile details of the logged-in job seeker."
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "Employer",
+      "item": [
         {
-          "name": "Get Applications",
+          "name": "Get Employer Profile (Not Implemented)",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{auth_token}}"
-              }
-            ],
+            "header": [],
             "url": {
-              "raw": "{{base_url}}/api/jobseeker/applications",
-              "host": ["{{base_url}}"],
-              "path": ["api", "jobseeker", "applications"]
+              "raw": ""
             }
-          }
+          },
+          "response": []
         }
       ]
     }
@@ -455,7 +427,9 @@
       "listen": "prerequest",
       "script": {
         "type": "text/javascript",
-        "exec": [""]
+        "exec": [
+          ""
+        ]
       }
     },
     {
@@ -463,21 +437,7 @@
       "script": {
         "type": "text/javascript",
         "exec": [
-          "// Test successful response",
-          "pm.test(\"Status code is 200 or 201\", function () {",
-          "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-          "});",
-          "",
-          "// Test response time",
-          "pm.test(\"Response time is less than 200ms\", function () {",
-          "    pm.expect(pm.response.responseTime).to.be.below(200);",
-          "});",
-          "",
-          "// Test response format",
-          "pm.test(\"Response has correct format\", function () {",
-          "    const response = pm.response.json();",
-          "    pm.expect(response).to.have.property('message');",
-          "});"
+          "if (pm.response.json().token) {\n    pm.environment.set(\"auth_token\", pm.response.json().token);\n    pm.environment.set(\"user_email\", pm.request.body.raw ? JSON.parse(pm.request.body.raw).email : \"\");\n    pm.environment.set(\"user_password\", pm.request.body.raw ? JSON.parse(pm.request.body.raw).password : \"\");\n} else if (pm.response.json().data && pm.response.json().data._id) {\n    if (pm.request.url.includes(\"/api/jobs\") && pm.request.method === \"POST\") {\n        pm.environment.set(\"job_id\", pm.response.json().data._id);\n    } else if (pm.request.url.includes(\"/api/applications\") && pm.request.method === \"POST\") {\n        pm.environment.set(\"application_id\", pm.response.json().application._id);\n    }\n}"
         ]
       }
     }
@@ -485,43 +445,39 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:3000",
-      "type": "string"
+      "value": "https://job-recruitment-backend-mv8y.onrender.com",
+      "type": "string",
+      "description": "Base URL of the backend API"
     },
     {
       "key": "auth_token",
-      "value": "your_jwt_token_here",
-      "type": "string"
+      "value": "",
+      "type": "string",
+      "description": "Authentication token for authorized requests"
     },
     {
       "key": "user_email",
-      "value": "john.doe@example.com",
-      "type": "string"
+      "value": "",
+      "type": "string",
+      "description": "Email of the logged-in user for subsequent login requests"
     },
     {
       "key": "user_password",
-      "value": "securepass123",
-      "type": "string"
-    },
-    {
-      "key": "user_role",
-      "value": "jobseeker",
-      "type": "string"
-    },
-    {
-      "key": "employer_id",
-      "value": "employer_id_here",
-      "type": "string"
+      "value": "",
+      "type": "string",
+      "description": "Password of the logged-in user for subsequent login requests"
     },
     {
       "key": "job_id",
-      "value": "job_id_here",
-      "type": "string"
+      "value": "",
+      "type": "string",
+      "description": "ID of the created job"
     },
     {
-      "key": "seeker_id",
-      "value": "seeker_id_here",
-      "type": "string"
+      "key": "application_id",
+      "value": "",
+      "type": "string",
+      "description": "ID of the created application"
     }
   ]
 }
